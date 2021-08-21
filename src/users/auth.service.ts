@@ -9,6 +9,7 @@ const crypt = promisify(scrypt);
 @Injectable()
 export class AuthService {
   constructor(private usersService: UsersService) {}
+
   async registerUser(dto: CreateUserDto) {
     const users = await this.usersService.findByUsername(dto.username);
 
@@ -25,6 +26,23 @@ export class AuthService {
       username: dto.username,
       password: hashedPassword,
     });
+
+    return user;
+  }
+
+  async loginUser(dto: CreateUserDto) {
+    const [user] = await this.usersService.findByUsername(dto.username);
+
+    if (!user) {
+      throw new BadRequestException('Credenciais inválidas');
+    }
+
+    const [salt, hashedPassInDB] = user.password.split('.');
+    const hash = (await crypt(dto.password, salt, 32)) as Buffer;
+
+    if (hashedPassInDB !== hash.toString('hex')) {
+      throw new BadRequestException('Credenciais inválidas');
+    }
 
     return user;
   }
