@@ -9,9 +9,16 @@ export class UsersController {
     private usersService: UsersService,
     private authService: AuthService,
   ) {}
-  @Post('/register')
+
+  @Post('/auth/register')
   @HttpCode(201)
   registerUser(@Body() user: CreateUserDto) {
     return this.authService.registerUser(user);
+  }
+
+  @Post('/auth/login')
+  @HttpCode(200)
+  loginUser(@Body() dto: CreateUserDto) {
+    return this.authService.loginUser(dto);
   }
 }
