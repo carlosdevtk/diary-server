@@ -1,6 +1,7 @@
 /tmp
 /http
 .env
+*.sqlite
 # compiled output
 /dist
 /node_modules
