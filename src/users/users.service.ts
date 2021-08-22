@@ -5,8 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './users.entity';
+import { randomBytes, scrypt } from 'crypto';
+import { promisify } from 'util';
+
+const crypt = promisify(scrypt);
 
 @Injectable()
 export class UsersService {
@@ -18,6 +21,11 @@ export class UsersService {
     });
 
     return this.usersRepo.save(user);
+  }
+
+  async hashPassword(password: string, salt: string) {
+    const hash = (await crypt(password, salt, 32)) as Buffer;
+    return salt + '.' + hash.toString('hex');
   }
 
   findById(id: number) {
@@ -43,6 +51,10 @@ export class UsersService {
       throw new BadRequestException(
         'Você não pode alterar dados de outro usuário >:(',
       );
+    }
+    if (attrs.password) {
+      const salt = randomBytes(8).toString('hex');
+      attrs.password = await this.hashPassword(attrs.password, salt);
     }
     Object.assign(user, attrs);
     return this.usersRepo.save(user);
