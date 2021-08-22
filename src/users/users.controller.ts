@@ -11,8 +11,10 @@ import { AuthGuard } from 'src/guards/Auth.guard';
 import { GuestGuard } from 'src/guards/Guest.guard';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserDto } from './dtos/user.dto';
+import { User } from './users.entity';
 import { UsersService } from './users.service';
 
 @Controller('/api')
@@ -22,6 +24,13 @@ export class UsersController {
     private usersService: UsersService,
     private authService: AuthService,
   ) {}
+
+  @Get('/auth/current-user')
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  currentUser(@CurrentUser() user: User) {
+    return user;
+  }
 
   @Post('/auth/register')
   @UseGuards(GuestGuard)
@@ -35,7 +44,8 @@ export class UsersController {
   @HttpCode(200)
   async loginUser(@Body() dto: CreateUserDto, @Session() session: any) {
     const user = await this.authService.loginUser(dto);
-    session.userId = user.id;
+    session.userId = user.username;
+    console.log(session.userId);
     return user;
   }
 
