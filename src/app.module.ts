@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/users.entity';
 import { UsersModule } from './users/users.module';
+import { NotesModule } from './notes/notes.module';
+import { User } from './users/users.entity';
+import { Note } from './notes/notes.entity';
 
 @Module({
   imports: [
@@ -16,11 +18,12 @@ import { UsersModule } from './users/users.module';
           type: 'sqlite',
           database: 'db.sqlite',
           synchronize: true,
-          entities: [User],
+          entities: [User, Note],
         };
       },
     }),
     UsersModule,
+    NotesModule,
   ],
   controllers: [],
   providers: [],
