@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
+  Param,
   Post,
   Session,
   UseGuards,
@@ -36,7 +38,7 @@ export class UsersController {
   @UseGuards(GuestGuard)
   @HttpCode(201)
   registerUser(@Body() user: CreateUserDto) {
-    return this.authService.registerUser(user);
+    return this.authService.registerUser(user.username, user.password);
   }
 
   @Post('/auth/login')
@@ -44,7 +46,7 @@ export class UsersController {
   @HttpCode(200)
   async loginUser(@Body() dto: CreateUserDto, @Session() session: any) {
     const user = await this.authService.loginUser(dto);
-    session.userId = user.username;
+    session.userId = user.id;
     console.log(session.userId);
     return user;
   }
@@ -53,6 +55,18 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @HttpCode(204)
   logoutUser(@Session() session: any) {
+    session.userId = null;
+  }
+
+  @Delete('/user/:id')
+  @UseGuards(AuthGuard)
+  @HttpCode(204)
+  async deleteUser(
+    @Param('id') id: string,
+    @Session() session: any,
+    @CurrentUser() currentUser: User,
+  ) {
+    await this.usersService.deleteUser(parseInt(id), currentUser);
     session.userId = null;
   }
 }
