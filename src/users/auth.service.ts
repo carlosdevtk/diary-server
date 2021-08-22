@@ -1,10 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
-import { randomBytes, scrypt } from 'crypto';
-import { promisify } from 'util';
-
-const crypt = promisify(scrypt);
 
 @Injectable()
 export class AuthService {
@@ -20,8 +17,8 @@ export class AuthService {
       );
     }
     const salt = randomBytes(8).toString('hex');
-    const hash = (await crypt(password, salt, 32)) as Buffer;
-    const hashedPassword = salt + '.' + hash.toString('hex');
+
+    const hashedPassword = await this.usersService.hashPassword(password, salt);
 
     const user = await this.usersService.createUser(username, hashedPassword);
 
@@ -36,9 +33,8 @@ export class AuthService {
     }
 
     const [salt, hashedPassInDB] = user.password.split('.');
-    const hash = (await crypt(dto.password, salt, 32)) as Buffer;
-
-    if (hashedPassInDB !== hash.toString('hex')) {
+    const hash = await this.usersService.hashPassword(dto.password, salt);
+    if (salt + '.' + hashedPassInDB !== hash) {
       throw new BadRequestException('Credenciais inválidas');
     }
 
