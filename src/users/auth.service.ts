@@ -10,8 +10,9 @@ const crypt = promisify(scrypt);
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
-  async registerUser(dto: CreateUserDto) {
-    const users = await this.usersService.findByUsername(dto.username);
+  async registerUser(username: string, password: string) {
+    username = username.toLowerCase();
+    const users = await this.usersService.findByUsername(username);
 
     if (users.length) {
       throw new BadRequestException(
@@ -19,13 +20,10 @@ export class AuthService {
       );
     }
     const salt = randomBytes(8).toString('hex');
-    const hash = (await crypt(dto.password, salt, 32)) as Buffer;
+    const hash = (await crypt(password, salt, 32)) as Buffer;
     const hashedPassword = salt + '.' + hash.toString('hex');
 
-    const user = await this.usersService.createUser({
-      username: dto.username,
-      password: hashedPassword,
-    });
+    const user = await this.usersService.createUser(username, hashedPassword);
 
     return user;
   }
