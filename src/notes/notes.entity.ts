@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/users.entity';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Note {
@@ -19,4 +26,22 @@ export class Note {
 
   @Column({ default: 0 })
   views: number;
+
+  @Column({ nullable: true })
+  createdAt: string;
+
+  @ManyToOne(() => User, (user) => user.notes)
+  user: User;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    const date = new Date();
+    const day = date.getDate().toString();
+    const finalDay = day.length === 1 ? '0' + day : day;
+    const month = (date.getMonth() + 1).toString();
+    const finalMonth = month.length == 1 ? '0' + month : month;
+    const year = date.getFullYear();
+
+    this.createdAt = finalDay + '/' + finalMonth + '/' + year;
+  }
 }
