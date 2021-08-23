@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import { User } from 'src/users/users.entity';
 import { CreateNoteDto } from './dtos/create-note.dto';
 import { NoteDto } from './dtos/note.dto';
+import { UpdateNoteDto } from './dtos/update-note.dto';
 import { NotesService } from './notes.service';
 
 @Controller('/api')
@@ -46,7 +48,22 @@ export class NotesController {
     @Param('noteId') noteId: string,
     @CurrentUser() user: User,
   ) {
-    console.log(username, noteId);
     return this.notesServices.findUserNote(username, parseInt(noteId), user);
+  }
+
+  @Patch('/:username/:noteId')
+  @HttpCode(200)
+  updateUserNote(
+    @Param('username') username: string,
+    @Param('noteId') noteId: string,
+    @CurrentUser() user: User,
+    @Body() attrs: UpdateNoteDto,
+  ) {
+    return this.notesServices.updateUserNote(
+      username,
+      parseInt(noteId),
+      user,
+      attrs,
+    );
   }
 }
