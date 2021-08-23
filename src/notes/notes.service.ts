@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { Repository } from 'typeorm';
@@ -30,5 +30,28 @@ export class NotesService {
     });
 
     return notes;
+  }
+
+  async findUserNote(username: string, id: number, currentUser: User) {
+    if (!id) {
+      return null;
+    }
+    const note = await this.notesRepo.findOne(id);
+
+    if (!note.isPublic) {
+      if (currentUser.username !== username) {
+        throw new BadRequestException(
+          'Você não pode bisbilhotar um diário alheio',
+        );
+      }
+      return note;
+    } else {
+      if (currentUser.username === username) {
+        return note;
+      }
+      note.views += 1;
+      await this.notesRepo.save(note);
+      return note;
+    }
   }
 }
