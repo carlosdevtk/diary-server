@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { Repository } from 'typeorm';
@@ -38,6 +42,10 @@ export class NotesService {
     }
     const note = await this.notesRepo.findOne(id);
 
+    if (!note) {
+      throw new NotFoundException('Esse diário não existe!');
+    }
+
     if (!note.isPublic) {
       if (currentUser.username !== username) {
         throw new BadRequestException(
@@ -53,5 +61,26 @@ export class NotesService {
       await this.notesRepo.save(note);
       return note;
     }
+  }
+
+  async updateUserNote(
+    username: string,
+    noteId: number,
+    currentUser: User,
+    attrs: Partial<Note>,
+  ) {
+    const note = await this.notesRepo.findOne(noteId);
+    if (!note) {
+      throw new NotFoundException('Esse diário não existe!');
+    }
+
+    if (note.user.id !== currentUser.id) {
+      throw new BadRequestException(
+        'Você não pode alterar o diário de outra pessoa >:(',
+      );
+    }
+    Object.assign(note, attrs);
+
+    return this.notesRepo.save(note);
   }
 }
