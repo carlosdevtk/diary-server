@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -36,5 +37,16 @@ export class NotesController {
   @HttpCode(200)
   findAllUserNotes(@CurrentUser() user: User) {
     return this.notesServices.findAllFromUser(user);
+  }
+
+  @Get('/:username/:noteId')
+  @HttpCode(200)
+  showUserNote(
+    @Param('username') username: string,
+    @Param('noteId') noteId: string,
+    @CurrentUser() user: User,
+  ) {
+    console.log(username, noteId);
+    return this.notesServices.findUserNote(username, parseInt(noteId), user);
   }
 }
