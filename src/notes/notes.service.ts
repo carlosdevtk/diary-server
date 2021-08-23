@@ -22,4 +22,13 @@ export class NotesService {
       .where('isPublic IS TRUE')
       .getMany();
   }
+
+  async findAllFromUser(user: User) {
+    const notes: Note[] = await this.notesRepo.find({
+      where: { user },
+      relations: ['user'],
+    });
+
+    return notes;
+  }
 }
