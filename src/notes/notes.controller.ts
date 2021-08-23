@@ -31,4 +31,10 @@ export class NotesController {
   findAllPublicNotes() {
     return this.notesServices.findAllPublics();
   }
+
+  @Get('/my-notes')
+  @HttpCode(200)
+  findAllUserNotes(@CurrentUser() user: User) {
+    return this.notesServices.findAllFromUser(user);
+  }
 }
