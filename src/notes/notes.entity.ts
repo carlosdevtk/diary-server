@@ -30,7 +30,7 @@ export class Note {
   @Column({ nullable: true })
   createdAt: string;
 
-  @ManyToOne(() => User, (user) => user.notes)
+  @ManyToOne(() => User, (user) => user.notes, { eager: true })
   user: User;
 
   @BeforeInsert()
