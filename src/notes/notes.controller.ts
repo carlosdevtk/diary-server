@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -71,5 +72,13 @@ export class NotesController {
       user,
       attrs,
     );
+  }
+  @Delete('/:username/:noteId')
+  @HttpCode(204)
+  deleteNote(
+    @Param('username') username: string,
+    @Param('noteId') noteId: string,
+  ) {
+    return this.notesServices.deleteNote(username, parseInt(noteId));
   }
 }
