@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -74,14 +75,14 @@ export class NotesService {
     }
 
     if (!note.isPublic) {
-      if (currentUser !== user) {
+      if (currentUser.id !== user.id) {
         throw new BadRequestException(
           'Você não pode bisbilhotar um diário alheio',
         );
       }
       return note;
     } else {
-      if (currentUser === user) {
+      if (currentUser.id === user.id) {
         return note;
       }
       note.views += 1;
@@ -109,5 +110,25 @@ export class NotesService {
     Object.assign(note, attrs);
 
     return this.notesRepo.save(note);
+  }
+
+  async deleteNote(username: string, noteId: number) {
+    const [user] = await this.usersService.findByUsername(username);
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+    const note = await this.notesRepo.findOne({
+      where: { id: noteId, user },
+      relations: ['user'],
+    });
+    if (!note) {
+      throw new NotFoundException('Diário não encontrado');
+    }
+    if (note.user.id !== user.id) {
+      throw new ForbiddenException(
+        'Você não pode deletar o diário de outra pessoa >:(',
+      );
+    }
+    return this.notesRepo.remove(note);
   }
 }
