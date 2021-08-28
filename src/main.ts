@@ -9,11 +9,16 @@ async function bootstrap() {
   (app as any).set('etag', false);
   app.use(cookieSession({ keys: ['algumaChaveSecreta'] }));
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost', 'http://127.0.0.1'],
+    methods: ['GET', 'PATCH', 'POST', 'DELETE'],
+    credentials: true,
+  });
   app.use((req, res, next) => {
     res.removeHeader('x-powered-by');
     res.removeHeader('date');
     next();
   });
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();
